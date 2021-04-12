@@ -1,0 +1,6 @@
+==========
+Args:Namespace(arch='resnet50', batch_size=2, data_dir='/media/yixuan/Project/person-reid/ClusterContrast/examples/data', dataset='dukemtmcreid', dropout=0, epochs=50, eps=0.6, eps_gap=0.02, eval_step=10, features=0, height=256, iters=400, k1=30, k2=6, logs_dir='/media/yixuan/Project/person-reid/ClusterContrast/examples/logs', lr=0.00035, momentum=0.2, num_instances=4, pooling_type='gem', print_freq=10, seed=1, step_size=20, temp=0.05, weight_decay=0.0005, width=128, workers=4)
+==========
+==> Load unlabeled dataset
+pooling_type: gem
+==> Create pseudo labels for unlabeled data
