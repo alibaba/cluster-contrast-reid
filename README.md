@@ -3,7 +3,7 @@
 
 # Cluster Contrast for Unsupervised Person Re-Identification
 
-The *official* repository for [Cluster Contrast for Unsupervised Person Re-Identification](https://arxiv.org/pdf/2103.11568v1.pdf). We achieve state-of-the-art performances on **unsupervised learning** tasks for object re-ID, including person re-ID and vehicle re-ID.
+The *official* repository for [Cluster Contrast for Unsupervised Person Re-Identification](https://arxiv.org/abs/2103.11568). We achieve state-of-the-art performances on **unsupervised learning** tasks for object re-ID, including person re-ID and vehicle re-ID.
 
 **Our unified framework**
 ![framework](figs/framework.png)
