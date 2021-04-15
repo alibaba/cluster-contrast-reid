@@ -66,7 +66,8 @@ def main_worker(args):
                                     args.width, args.batch_size, args.workers)
 
     # Create model
-    model = models.create(args.arch, pretrained=False, num_features=args.features, dropout=args.dropout, num_classes=0)
+    model = models.create(args.arch, pretrained=False, num_features=args.features, dropout=args.dropout,
+                          num_classes=0, pooling_type=args.pooling_type)
     if args.dsbn:
         print("==> Load the model with domain-specific BNs")
         convert_dsbn(model)
@@ -92,11 +93,11 @@ def main_worker(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Testing the model")
     # data
-    parser.add_argument('-d', '--dataset', type=str, default='veri')
+    parser.add_argument('-d', '--dataset', type=str, default='market1501')
     parser.add_argument('-b', '--batch-size', type=int, default=256)
     parser.add_argument('-j', '--workers', type=int, default=4)
-    parser.add_argument('--height', type=int, default=224, help="input height")
-    parser.add_argument('--width', type=int, default=224, help="input width")
+    parser.add_argument('--height', type=int, default=256, help="input height")
+    parser.add_argument('--width', type=int, default=128, help="input width")
     # model
     parser.add_argument('-a', '--arch', type=str, default='resnet50',
                         choices=models.names())
@@ -104,7 +105,7 @@ if __name__ == '__main__':
     parser.add_argument('--dropout', type=float, default=0)
 
     parser.add_argument('--resume', type=str,
-                        default="/media/yixuan/Project/guangyuan/workpalces/SpCL/checkpoint_models/veri_res50_papper/model_best.pth.tar",
+                        default="/media/yixuan/DATA/cluster-contrast/market-res50/logs/model_best.pth.tar",
                         metavar='PATH')
     # testing configs
     parser.add_argument('--rerank', action='store_true',
@@ -118,7 +119,7 @@ if __name__ == '__main__':
     working_dir = osp.dirname(osp.abspath(__file__))
     parser.add_argument('--data-dir', type=str, metavar='PATH',
                         default='/media/yixuan/Project/guangyuan/workpalces/SpCL/examples/data')
-
+    parser.add_argument('--pooling-type', type=str, default='gem')
     parser.add_argument('--embedding_features_path', type=str,
                         default='/media/yixuan/Project/guangyuan/workpalces/SpCL/embedding_features/mark1501_res50_ibn/')
     main()
