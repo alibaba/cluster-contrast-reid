@@ -1,3 +1,5 @@
+import collections
+import numpy as np
 from abc import ABC
 import torch
 import torch.nn.functional as F
@@ -53,7 +55,7 @@ class CM_Hard(autograd.Function):
             grad_inputs = grad_outputs.mm(ctx.features)
 
         batch_centers = collections.defaultdict(list)
-        for instance_feature, index in zip(inputs, indexes.tolist()):
+        for instance_feature, index in zip(inputs, targets.tolist()):
             batch_centers[index].append(instance_feature)
 
         for index, features in batch_centers.items():

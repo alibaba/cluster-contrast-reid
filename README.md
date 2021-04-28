@@ -97,6 +97,27 @@ python examples/test.py \
 
 You can download the above models in the paper from [aliyun](https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/cluster-contrast.zip) 
 
+For fair comparision, we use the simple global average pooling in paper. Generalized Mean Pooling (GEM) pooling could further improve performances, making Cluster Contraster performans better than many supervised methods:
+```shell
+CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl.py -b 256 -a resnet_ibn50a -d market1501 --iters 400 --momentum 0.1 --eps 0.4 --num-instances 16 --pooling-type gem --use-hard
+
+CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl.py -b 256 -a resnet_ibn50a -d dukemtmcreid --iters 400 --momentum 0.1 --eps 0.6 --num-instances 16 --pooling-type gem --use-hard 
+```
+Market1501
+
+| Method | mAP(%)	| R@1(%)	| R@5(%)	| R@10(%) |
+|---------|---------|---------|---------|---------|
+| Cluster Contrast | 84.1 | 93.2 | 97.6 | 98.1 |
+| Cluster Contrast + GEM | 87.0 | 94.6 | 98.2 | 98.8 |
+
+DukeMTMC
+
+| Method | mAP(%)	| R@1(%)	| R@5(%)	| R@10(%) |
+|---------|---------|---------|---------|---------|
+| Cluster Contrast | 74.2 | 85.8 | 92.1 | 94.2 |
+| Cluster Contrast + GEM | 76.0 | 86.8 | 93.1 | 94.7 |
+
+
 ## Citation
 
 If you find this code useful for your research, please cite our paper
