@@ -13,7 +13,7 @@ The *official* repository for [Cluster Contrast for Unsupervised Person Re-Ident
 ### Installation
 
 ```shell
-git clone http://gitlab.alibaba-inc.com/yixuan.wgy/ClusterContrast.git
+git clone https://github.com/alibaba/cluster-contrast-reid.git
 cd ClusterContrast
 python setup.py develop
 ```
