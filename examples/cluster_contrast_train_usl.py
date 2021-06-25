@@ -8,6 +8,7 @@ import sys
 import collections
 import time
 from datetime import timedelta
+import random
 
 from sklearn.cluster import DBSCAN
 
@@ -171,16 +172,19 @@ def main_worker(args):
                     continue
                 centers[labels[i]].append(features[i])
 
+            # centers = [
+            #     torch.stack(centers[idx], dim=0).mean(0) for idx in sorted(centers.keys())
+            # ]
             centers = [
-                torch.stack(centers[idx], dim=0).mean(0) for idx in sorted(centers.keys())
+                random.choice(torch.stack(centers[idx], dim=0)) for idx in sorted(centers.keys())
             ]
 
             centers = torch.stack(centers, dim=0)
             return centers
 
         cluster_features = generate_cluster_features(pseudo_labels, features)
+        
         del cluster_loader, features
-
         # Create hybrid memory
         memory = ClusterMemory(model.module.num_features, num_cluster, temp=args.temp,
                                momentum=args.momentum, use_hard=args.use_hard).cuda()
