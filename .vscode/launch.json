@@ -26,7 +26,7 @@
         {
             "name": "SS-Camera",
             "type": "python",
-            "request": "launch",
+            "request": "launch",  
             "program": "examples/cluster_contrast_train_usl_ss_camera.py",
             "console": "integratedTerminal",
             "args":["-b","64","-a","resnet50","-d","market1501","--iters","200","--momentum","0.1",
