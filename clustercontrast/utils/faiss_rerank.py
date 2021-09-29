@@ -27,7 +27,7 @@ def k_reciprocal_neigh(initial_rank, i, k1):
     return forward_k_neigh_index[fi]
 
 
-def compute_jaccard_distance(target_features, k1=20, k2=6, print_flag=True, search_option=0, use_float16=False):
+def compute_jaccard_distance(target_features, k1=20, k2=6, print_flag=True, search_option=3, use_float16=False):
     end = time.time()
     if print_flag:
         print('Computing jaccard distance...')

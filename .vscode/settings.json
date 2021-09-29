@@ -1,0 +1,20 @@
+{
+    "python.pythonPath": "/home/user/.conda/envs/ccr/bin/python",
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#f5579b",
+        "activityBar.activeBorder": "#70f10e",
+        "activityBar.background": "#f5579b",
+        "activityBar.foreground": "#15202b",
+        "activityBar.inactiveForeground": "#15202b99",
+        "activityBarBadge.background": "#70f10e",
+        "activityBarBadge.foreground": "#15202b",
+        "statusBar.background": "#f2277e",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#f5579b",
+        "titleBar.activeBackground": "#f2277e",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#f2277e99",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.remoteColor": "#f2277e"
+}

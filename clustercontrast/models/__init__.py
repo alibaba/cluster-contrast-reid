@@ -1,7 +1,10 @@
 from __future__ import absolute_import
+from clustercontrast.models.mean_net import TeacherStudentNetwork
 
 from .resnet import *
 from .resnet_ibn import *
+from .mean_net import *
+
 __factory = {
     'resnet18': resnet18,
     'resnet34': resnet34,
@@ -10,6 +13,8 @@ __factory = {
     'resnet152': resnet152,
     'resnet_ibn50a': resnet_ibn50a,
     'resnet_ibn101a': resnet_ibn101a,
+    'mean_net': TeacherStudentNetwork,
+    'self_loss': SelfDisLoss
 }
 
 

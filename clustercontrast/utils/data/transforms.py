@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import copy
 from torchvision.transforms import *
 from PIL import Image
 import random
@@ -94,3 +95,20 @@ class RandomErasing(object):
                 return img
 
         return img
+
+class MutualTransform(object):
+    def __init__(self, transformer, times=2):
+        self.transformer = transformer
+        self.times = times
+
+    def __call__(self, img):
+        imgs = []
+        for i in range(self.times):
+            img_copy = copy.deepcopy(img)
+            img_copy = self.transformer(img_copy)
+            imgs.append(img_copy)
+
+        return imgs
+
+    def __repr__(self):
+        return "Mutual Transformer"

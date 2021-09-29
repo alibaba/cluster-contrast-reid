@@ -1,0 +1,38 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "camera",
+            "type": "python",
+            "request": "launch",
+            "program": "examples/camera_cluster_contrast_train_usl.py",
+            "console": "integratedTerminal",
+            "args":["-b","64","-a","resnet50","-d","market1501","--iters","200","--momentum","0.1",
+                    "--eps","0.4","--num-instances","16","--pooling-type","avg","--use-hard"]
+        },
+        {
+            "name": "Self-supervised",
+            "type": "python",
+            "request": "launch",
+            "program": "examples/cluster_contrast_train_usl_self_supervised.py",
+            "console": "integratedTerminal",
+            "args":["-b","64","-a","resnet50","-d","market1501","--iters","200","--momentum","0.1",
+                    "--eps","0.4","--num-instances","16","--pooling-type","avg","--use-hard"]
+        },
+        {
+            "name": "SS-Camera",
+            "type": "python",
+            "request": "launch",
+            "program": "examples/cluster_contrast_train_usl_ss_camera.py",
+            "console": "integratedTerminal",
+            "args":["-b","64","-a","resnet50","-d","market1501","--iters","200","--momentum","0.1",
+                    "--eps","0.4","--num-instances","16","--pooling-type","avg","--use-hard"]
+        }
+
+        
+    ]
+}
