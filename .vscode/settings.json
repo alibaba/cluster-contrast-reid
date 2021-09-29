@@ -1,20 +1,20 @@
 {
     "python.pythonPath": "/home/user/.conda/envs/ccr/bin/python",
     "workbench.colorCustomizations": {
-        "activityBar.activeBackground": "#f5579b",
-        "activityBar.activeBorder": "#70f10e",
-        "activityBar.background": "#f5579b",
+        "activityBar.activeBackground": "#fbed80",
+        "activityBar.activeBorder": "#06b9a5",
+        "activityBar.background": "#fbed80",
         "activityBar.foreground": "#15202b",
         "activityBar.inactiveForeground": "#15202b99",
-        "activityBarBadge.background": "#70f10e",
+        "activityBarBadge.background": "#06b9a5",
         "activityBarBadge.foreground": "#15202b",
-        "statusBar.background": "#f2277e",
-        "statusBar.foreground": "#e7e7e7",
-        "statusBarItem.hoverBackground": "#f5579b",
-        "titleBar.activeBackground": "#f2277e",
-        "titleBar.activeForeground": "#e7e7e7",
-        "titleBar.inactiveBackground": "#f2277e99",
-        "titleBar.inactiveForeground": "#e7e7e799"
+        "statusBar.background": "#f9e64f",
+        "statusBar.foreground": "#15202b",
+        "statusBarItem.hoverBackground": "#f7df1e",
+        "titleBar.activeBackground": "#f9e64f",
+        "titleBar.activeForeground": "#15202b",
+        "titleBar.inactiveBackground": "#f9e64f99",
+        "titleBar.inactiveForeground": "#15202b99"
     },
-    "peacock.remoteColor": "#f2277e"
+    "peacock.remoteColor": "#f9e64f"
 }

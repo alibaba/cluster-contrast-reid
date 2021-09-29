@@ -6,3 +6,4 @@ ClusterContrast.egg-info
 examples/data
 examples/pretrained
 .vscode
+*.json
