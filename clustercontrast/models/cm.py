@@ -2,6 +2,7 @@
 import collections
 import numpy as np
 from abc import ABC
+from numpy.core.numeric import _full_like_dispatcher
 import torch
 import torch.nn.functional as F
 from torch import nn, autograd
@@ -126,13 +127,56 @@ class CM_Camera(autograd.Function):
             ctx.features[index_m] /= ctx.features[index_m].norm()
 
         return grad_inputs, None, None, None, None, None, None
+    
+class CM_Camera_Hard(autograd.Function):
+
+    @staticmethod
+    def forward(ctx, inputs, targets, cams, features, pids, camids, momentum):
+        ctx.features = features
+        ctx.momentum = momentum
+        ctx.save_for_backward(inputs, targets, cams, pids, camids)
+        outputs = inputs.mm(ctx.features.t())
+
+        return outputs
+
+    @staticmethod
+    def backward(ctx, grad_outputs):
+        inputs, targets, cams, pids, camids = ctx.saved_tensors
+        grad_inputs = None
+        if ctx.needs_input_grad[0]:
+            grad_inputs = grad_outputs.mm(ctx.features)
+            
+        batch_centers = dict()
+        for instance_feature, target, cam in zip(inputs, targets.tolist(), cams.tolist()):
+            if target not in batch_centers:
+                batch_centers[target] = collections.defaultdict(list)
+
+            batch_centers[target][cam].append(instance_feature)
+        # print(batch_centers)
+        for target, cam_dict in batch_centers.items():
+            for cam, features in cam_dict.items():
+                index = (pids == target) & (camids == cam)
+                features = torch.stack(features, dim=0)
+                # print(features.shape)
+                # print(ctx.features[index].shape)
+                distances = einsum("bc,nc->nb", [features, ctx.features[index]])
+                # print(distances.shape)
+                median = torch.argmin(distances[0])
+                # print(median)
+                ctx.features[index] = ctx.features[index] * ctx.momentum + (1 - ctx.momentum) * features[median]
+                ctx.features[index] /= ctx.features[index].norm()
+
+        return grad_inputs, None, None, None, None, None, None
 
 
 def cm_camera(inputs, targets, cams, features, pids, camids, momentum=0.5):
     return CM_Camera.apply(inputs, targets, cams, features, pids, camids, torch.Tensor([momentum]).to(inputs.device))
 
+def cm_camera_hard(inputs, targets, cams, features, pids, camids, momentum=0.5):
+    return CM_Camera_Hard.apply(inputs, targets, cams, features, pids, camids, torch.Tensor([momentum]).to(inputs.device))
+
 class CameraMemory(nn.Module, ABC):
-    def __init__(self, num_features, num_samples, pids, camids, temp=0.05, momentum=0.2, margin=0.0):
+    def __init__(self, num_features, num_samples, pids, camids, temp=0.05, momentum=0.2, margin=0.0, use_hard=False):
         super(CameraMemory, self).__init__()
         self.num_features = num_features
         self.num_samples = num_samples
@@ -142,6 +186,7 @@ class CameraMemory(nn.Module, ABC):
         # self.pids = torch.LongTensor(pids)
         # self.camids = torch.LongTensor(camids)
         self.margin = margin
+        self.use_hard = use_hard
 
         self.register_buffer('features', torch.zeros(num_samples, num_features))
         self.register_buffer('pids', torch.LongTensor(pids))
@@ -150,8 +195,12 @@ class CameraMemory(nn.Module, ABC):
     def forward(self, inputs, targets, cams):
 
         inputs = F.normalize(inputs, dim=1).cuda()
-        outputs = cm_camera(inputs, targets, cams, self.features, 
-                            self.pids, self.camids, self.momentum)
+        if self.use_hard:
+            outputs = cm_camera_hard(inputs, targets, cams, self.features, 
+                    self.pids, self.camids, self.momentum)
+        else:
+            outputs = cm_camera(inputs, targets, cams, self.features, 
+                                self.pids, self.camids, self.momentum)
         outputs = (outputs + 1.0) * 0.5 
         loss_p = 0.0
         loss_n = 0.0
