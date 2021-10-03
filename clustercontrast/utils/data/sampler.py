@@ -41,6 +41,40 @@ class RandomIdentitySampler(Sampler):
                 t = np.random.choice(t, size=self.num_instances, replace=True)
             ret.extend(t)
         return iter(ret)
+    
+class RandomIdentitySamplerCamera(Sampler):
+    def __init__(self, data_source, num_instances):
+        self.data_source = data_source
+        self.num_instances = num_instances
+        self.index_dic = defaultdict(list)
+        self.pid2cam = defaultdict(list)
+        for index, (_, pid, cam) in enumerate(data_source):
+            self.index_dic[pid].append(index)
+            self.pid2cam[pid].append(cam)
+
+        self.index_bag = []
+        for pid in self.index_dic.keys():
+            cam2index = defaultdict(list)
+            for cam, index in zip(self.pid2cam[pid], self.index_dic[pid]):
+                cam2index[cam].append(index)
+            self.index_bag.extend([v for v in cam2index.values()])
+
+        self.num_samples = len(self.index_bag)
+
+    def __len__(self):
+        return self.num_samples * self.num_instances
+
+    def __iter__(self):
+        indices = torch.randperm(self.num_samples).tolist()
+        ret = []
+        for i in indices:
+            t = self.index_bag[i]
+            if len(t) >= self.num_instances:
+                t = np.random.choice(t, size=self.num_instances, replace=False)
+            else:
+                t = np.random.choice(t, size=self.num_instances, replace=True)
+            ret.extend(t)
+        return iter(ret)
 
 
 class RandomMultipleGallerySampler(Sampler):

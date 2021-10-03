@@ -1,0 +1,14 @@
+logs
+*.pyc
+examples/logs
+ClusterContrast.egg-info
+*cpython-36.pyc
+examples/data
+examples/pretrained
+.vscode/
+.vscode/*.json
+*.json
+.*
+!/.gitignore
+.vscode/settings.json
+.vscode/settings.json
