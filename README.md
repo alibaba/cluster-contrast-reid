@@ -6,7 +6,7 @@
 The *official* repository for [Cluster Contrast for Unsupervised Person Re-Identification](https://arxiv.org/abs/2103.11568). We achieve state-of-the-art performances on **unsupervised learning** tasks for object re-ID, including person re-ID and vehicle re-ID.
 
 **Our unified framework**
-![framework](figs/framework.png)
+![framework](figs/frameworkv2.png)
 ## Updates
 
 ***11/19/2021***
@@ -145,7 +145,7 @@ python examples/test.py \
 
 ## Results
 
-![framework](figs/results.png)
+![framework](figs/resultsv2.png)
 
 You can download the above models in the paper from [aliyun](https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/cluster-contrast.zip) 
 
