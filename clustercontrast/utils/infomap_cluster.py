@@ -5,7 +5,7 @@ import faiss
 import math
 import multiprocessing as mp
 from clustercontrast.utils.infomap_utils import Timer
-from clustercontrast.utils.evaluate import evaluate
+
 
 
 

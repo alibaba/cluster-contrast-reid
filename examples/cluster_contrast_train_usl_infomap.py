@@ -148,7 +148,7 @@ def main_worker(args):
 
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=0.1)
     # Trainer
-    trainer = ClusterContrastTrainer(model, args.margin)
+    trainer = ClusterContrastTrainer(model)
 
     for epoch in range(args.epochs):
         with torch.no_grad():
@@ -207,7 +207,7 @@ def main_worker(args):
 
         train_loader = get_train_loader(args, dataset, args.height, args.width,
                                         args.batch_size, args.workers, args.num_instances, iters,
-                                        trainset=pseudo_labeled_dataset, is_cam=args.no_cam)
+                                        trainset=pseudo_labeled_dataset, no_cam=args.no_cam)
 
         train_loader.new_epoch()
         trainer.train(epoch, train_loader, optimizer,
