@@ -7,6 +7,25 @@ The *official* repository for [Cluster Contrast for Unsupervised Person Re-Ident
 
 **Our unified framework**
 ![framework](figs/framework.png)
+## Updates
+
+***11/19/2021***
+
+1. Memory dictionary update changed from bath hard update to momentum update. Because the bath hard update is sensitive to parameters, good results need to adjust many parameters, which is not robust enough.
+
+
+2. Add the results of the InforMap clustering algorithm. Compared with the DBSCAN clustering algorithm, it can achieve better results. At the same time, we found through experiments that it is more robust on each data set.
+
+## Notes
+
+In the process of doing experiments, we found that some settings have a greater impact on the results. Share them here to prevent everyone from stepping on the pit when applying our method.
+
+1. The dataloader sampler uses RandomMultipleGallerySampler, see the code implementation for details. At the same time, we also provide RandomMultipleGallerySamplerNoCam sampler, which can be used in non-ReID fields.
+
+2. Add batch normalization to the final output layer of the network, see the code for details.
+
+3.  we obtain a total number of P × Z images in the mini
+batch. P represents the number of categories, Z represents the number of instances of each category. mini batch = P x Z, P is set to 16, Z changes with the mini batch. 
 
 ## Requirements
 
@@ -54,18 +73,51 @@ We utilize 4 GTX-2080TI GPUs for training. For more parameter configuration, ple
 
 Market-1501:
 
+1. Using DBSCAN:
 ```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl.py -b 256 -a resnet50 -d market1501 --iters 200 --momentum 0.1 --eps 0.4 --num-instances 16
+CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl.py -b 256 -a resnet50 -d market1501 --iters 200 --momentum 0.1 --eps 0.6 --num-instances 16
 ```
-MSMT17:
+
+
+2. Using InfoMap:
 ```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl.py -b 256 -a resnet50 -d msmt17 --iters 400 --momentum 0.1 --eps 0.7 --num-instances 16
+CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl_infomap.py -b 256 -a resnet50 -d market1501 --iters 200 --momentum 0.1 --eps 0.5 --k1 15 --k2 4 --num-instances 16
+```
+
+MSMT17:
+
+1. Using DBSCAN:
+```shell
+CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl.py -b 256 -a resnet50 -d msmt17 --iters 400 --momentum 0.1 --eps 0.6 --num-instances 16
+```
+
+2. Using InfoMap:
+```shell
+CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl_infomap.py -b 256 -a resnet50 -d msmt17 --iters 400 --momentum 0.1 --eps 0.5 --k1 15 --k2 4 --num-instances 16
 ```
 
 DukeMTMC-reID:
 
+1. Using DBSCAN:
 ```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl.py -b 256 -a resnet50 -d dukemtmcreid --iters 200 --momentum 0.1 --eps 0.7 --num-instances 16
+CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl.py -b 256 -a resnet50 -d dukemtmcreid --iters 200 --momentum 0.1 --eps 0.6 --num-instances 16
+```
+
+2. Using InfoMap:
+```shell
+CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl_infomap.py -b 256 -a resnet50 -d dukemtmcreid --iters 200 --momentum 0.1 --eps 0.5 --k1 15 --k2 4 --num-instances 16
+```
+
+VeRi-776
+
+1. Using DBSCAN:
+```shell
+CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl.py -b 256 -a resnet50 -d veri --iters 400 --momentum 0.1 --eps 0.6 --num-instances 16 --height 224 --width 224
+```
+
+2. Using InfoMap:
+```shell
+CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl_infomap.py -b 256 -a resnet50 -d veri --iters 400 --momentum 0.1 --eps 0.5 --k1 15 --k2 4 --num-instances 16 --height 224 --width 224
 ```
 
 ## Evaluation
@@ -96,26 +148,6 @@ python examples/test.py \
 ![framework](figs/results.png)
 
 You can download the above models in the paper from [aliyun](https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/cluster-contrast.zip) 
-
-For fair comparision, we use the simple global average pooling in paper. Generalized Mean Pooling (GEM) pooling could further improve performances, making Cluster Contraster performans better than many supervised methods:
-```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl.py -b 256 -a resnet_ibn50a -d market1501 --iters 400 --momentum 0.1 --eps 0.4 --num-instances 16 --pooling-type gem --use-hard
-
-CUDA_VISIBLE_DEVICES=0,1,2,3 python examples/cluster_contrast_train_usl.py -b 256 -a resnet_ibn50a -d dukemtmcreid --iters 400 --momentum 0.1 --eps 0.6 --num-instances 16 --pooling-type gem --use-hard 
-```
-Market1501
-
-| Method | mAP(%)	| R@1(%)	| R@5(%)	| R@10(%) |
-|---------|---------|---------|---------|---------|
-| Cluster Contrast | 84.1 | 93.2 | 97.6 | 98.1 |
-| Cluster Contrast + GEM | 87.0 | 94.6 | 98.2 | 98.8 |
-
-DukeMTMC
-
-| Method | mAP(%)	| R@1(%)	| R@5(%)	| R@10(%) |
-|---------|---------|---------|---------|---------|
-| Cluster Contrast | 74.2 | 85.8 | 92.1 | 94.2 |
-| Cluster Contrast + GEM | 76.0 | 86.8 | 93.1 | 94.7 |
 
 
 ## Citation
