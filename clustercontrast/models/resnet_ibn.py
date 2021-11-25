@@ -22,7 +22,6 @@ class ResNetIBN(nn.Module):
     def __init__(self, depth, pretrained=True, cut_at_pooling=False,
                  num_features=0, norm=False, dropout=0, num_classes=0, pooling_type='avg'):
 
-        print('pooling_type: {}'.format(pooling_type))
         super(ResNetIBN, self).__init__()
 
         self.depth = depth
