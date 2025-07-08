@@ -1,13 +1,15 @@
 from __future__ import print_function, absolute_import
 import time
 from .utils.meters import AverageMeter
+import torch
 
 
 class ClusterContrastTrainer(object):
-    def __init__(self, encoder, memory=None):
+    def __init__(self, encoder, memory=None, device=torch.device("cpu")):
         super(ClusterContrastTrainer, self).__init__()
         self.encoder = encoder
         self.memory = memory
+        self.device = device  
 
     def train(self, epoch, data_loader, optimizer, print_freq=10, train_iters=400):
         self.encoder.train()
@@ -55,7 +57,7 @@ class ClusterContrastTrainer(object):
 
     def _parse_data(self, inputs):
         imgs, _, pids, _, indexes = inputs
-        return imgs.cuda(), pids.cuda(), indexes.cuda()
+        return imgs.to(self.device), pids.to(self.device), indexes.to(self.device)
 
     def _forward(self, inputs):
         return self.encoder(inputs)

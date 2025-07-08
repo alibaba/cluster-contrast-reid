@@ -12,9 +12,18 @@ from .utils.meters import AverageMeter
 from .utils.rerank import re_ranking
 from .utils import to_torch
 
+# -------- device helper ---------------------------------
+device = (
+    torch.device("mps") if torch.backends.mps.is_available()
+    else torch.device("cuda") if torch.cuda.is_available()
+    else torch.device("cpu")
+)
+#print(f"Using device: {device}")
+# ---------------------------------------------------------
+
 
 def extract_cnn_feature(model, inputs):
-    inputs = to_torch(inputs).cuda()
+    inputs = to_torch(inputs).to(device)    
     outputs = model(inputs)
     outputs = outputs.data.cpu()
     return outputs
