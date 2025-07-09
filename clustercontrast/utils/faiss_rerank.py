@@ -55,8 +55,6 @@ def compute_jaccard_distance(target_features, k1=20, k2=6, print_flag=True, sear
     initial_rank = labels                      # (N, k1+1) int32
     # -----------------------------------------------------------
 
-    
-
 
     nn_k1 = []
     nn_k1_half = []

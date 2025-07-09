@@ -98,3 +98,4 @@ class ClusterMemory(nn.Module, ABC):
         outputs /= self.temp
         loss = F.cross_entropy(outputs, targets)
         return loss
+
