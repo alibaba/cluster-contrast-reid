@@ -16,8 +16,7 @@ import gc
 import torch
 import torch.nn.functional as F
 
-from .faiss_utils import search_index_pytorch, search_raw_array_pytorch, \
-                            index_init_gpu, index_init_cpu
+#from .faiss_utils import search_index_pytorch, search_raw_array_pytorch, index_init_gpu, index_init_cpu
 
 import hnswlib
 
