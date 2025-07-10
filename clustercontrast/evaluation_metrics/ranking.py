@@ -44,8 +44,11 @@ def cmc(distmat, query_ids=None, gallery_ids=None,
     num_valid_queries = 0
     for i in range(m):
         # Filter out the same id and same camera
-        valid = ((gallery_ids[indices[i]] != query_ids[i]) |
-                 (gallery_cams[indices[i]] != query_cams[i]))
+        #valid = ((gallery_ids[indices[i]] != query_ids[i]) | (gallery_cams[indices[i]] != query_cams[i]))
+        
+        # Allow Same-Camera Evaluation
+        valid = np.ones_like(gallery_ids[indices[i]], dtype=bool)
+        
         if separate_camera_set:
             # Filter out samples from same camera
             valid &= (gallery_cams[indices[i]] != query_cams[i])
@@ -104,8 +107,11 @@ def mean_ap(distmat, query_ids=None, gallery_ids=None,
     aps = []
     for i in range(m):
         # Filter out the same id and same camera
-        valid = ((gallery_ids[indices[i]] != query_ids[i]) |
-                 (gallery_cams[indices[i]] != query_cams[i]))
+        #valid = ((gallery_ids[indices[i]] != query_ids[i]) | (gallery_cams[indices[i]] != query_cams[i]))
+
+        # Allow Same-Camera Evaluation
+        valid = np.ones_like(gallery_ids[indices[i]], dtype=bool)
+
         y_true = matches[i, valid]
         y_score = -distmat[i][indices[i]][valid]
         if not np.any(y_true): continue

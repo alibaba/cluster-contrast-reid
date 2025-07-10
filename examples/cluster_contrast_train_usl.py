@@ -167,7 +167,7 @@ def main_worker(args):
     iters = args.iters if (args.iters > 0) else None
     print("==> Load unlabeled dataset")
     dataset = get_data(args.dataset, args.data_dir)
-    subsample_dataset(dataset, num_ids=10, max_per_split=200)
+    #subsample_dataset(dataset, num_ids=10, max_per_split=200)
     
     test_loader = get_test_loader(dataset, args.height, args.width, args.batch_size, args.workers)
 
