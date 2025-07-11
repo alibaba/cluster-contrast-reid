@@ -6,6 +6,7 @@ from .msmt17 import MSMT17
 from .personx import PersonX
 from .veri import VeRi
 from .dukemtmcreid import DukeMTMCreID
+from .dolphin import Dolphin 
 
 
 __factory = {
@@ -13,7 +14,8 @@ __factory = {
     'msmt17': MSMT17,
     'personx': PersonX,
     'veri': VeRi,
-    'dukemtmcreid': DukeMTMCreID
+    'dukemtmcreid': DukeMTMCreID,
+    'dolphin': Dolphin
 }
 
 

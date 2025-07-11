@@ -1,0 +1,24 @@
+Metadata-Version: 2.4
+Name: ClusterContrast
+Version: 1.0.0
+Summary: Cluster Contrast for Unsupervised Person Re-Identification
+Author: GuangYuan wang
+Author-email: yixuan.wgy@alibaba-inc.com
+Keywords: Unsupervised Learning,Contrastive Learning,Object Re-identification
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: torch
+Requires-Dist: torchvision
+Requires-Dist: six
+Requires-Dist: h5py
+Requires-Dist: Pillow
+Requires-Dist: scipy
+Requires-Dist: scikit-learn
+Requires-Dist: metric-learn
+Requires-Dist: faiss-cpu
+Dynamic: author
+Dynamic: author-email
+Dynamic: keywords
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: summary

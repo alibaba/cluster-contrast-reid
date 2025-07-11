@@ -30,6 +30,22 @@ from clustercontrast.utils.serialization import load_checkpoint, save_checkpoint
 from clustercontrast.utils.faiss_rerank import compute_jaccard_distance
 from clustercontrast.utils.data.sampler import RandomMultipleGallerySampler, RandomMultipleGallerySamplerNoCam
 
+# -------- device helper ---------------------------------
+device = (
+    torch.device("mps") if torch.backends.mps.is_available()
+    else torch.device("cuda") if torch.cuda.is_available()
+    else torch.device("cpu")
+)
+#print(f"Using device: {device}")
+# ---------------------------------------------------------
+
+def get_num_features(net):
+    """
+    Works for both plain models and nn.DataParallel wrappers.
+    """
+    return net.module.num_features if hasattr(net, "module") else net.num_features
+
+
 start_epoch = best_mAP = 0
 
 
@@ -38,6 +54,30 @@ def get_data(name, data_dir):
     dataset = datasets.create(name, root)
     return dataset
 
+
+# ----------------- insert here -----------------
+def subsample_dataset(ds, num_ids=10, max_per_split=None, seed=42):
+    """
+    Keep `num_ids` identities and (optionally) cap each split
+    at `max_per_split` images.  Modifies the Dataset object in-place.
+    """
+    random.seed(seed)
+
+    all_pids   = list({pid for _, pid, _ in ds.train})
+    keep_pids  = set(random.sample(all_pids, k=num_ids))
+
+    ds.train   = [x for x in ds.train   if x[1] in keep_pids]
+    ds.query   = [x for x in ds.query   if x[1] in keep_pids]
+    ds.gallery = [x for x in ds.gallery if x[1] in keep_pids]
+
+    if max_per_split is not None:
+        ds.train   = ds.train[:max_per_split]
+        ds.query   = ds.query[:max_per_split]
+        ds.gallery = ds.gallery[:max_per_split]
+
+    print(f"Sub-sampled to {len(keep_pids)} IDs | "
+          f"{len(ds.train)} train / {len(ds.query)} query / {len(ds.gallery)} gallery images")
+# ------------------------------------------
 
 def get_train_loader(args, dataset, height, width, batch_size, workers,
                      num_instances, iters, trainset=None, no_cam=False):
@@ -67,7 +107,7 @@ def get_train_loader(args, dataset, height, width, batch_size, workers,
     train_loader = IterLoader(
         DataLoader(Preprocessor(train_set, root=dataset.images_dir, transform=train_transformer),
                    batch_size=batch_size, num_workers=workers, sampler=sampler,
-                   shuffle=not rmgs_flag, pin_memory=True, drop_last=True), length=iters)
+                   shuffle=not rmgs_flag, pin_memory=False, drop_last=True), length=iters)
 
     return train_loader
 
@@ -88,7 +128,7 @@ def get_test_loader(dataset, height, width, batch_size, workers, testset=None):
     test_loader = DataLoader(
         Preprocessor(testset, root=dataset.images_dir, transform=test_transformer),
         batch_size=batch_size, num_workers=workers,
-        shuffle=False, pin_memory=True)
+        shuffle=False, pin_memory=False)
 
     return test_loader
 
@@ -96,9 +136,9 @@ def get_test_loader(dataset, height, width, batch_size, workers, testset=None):
 def create_model(args):
     model = models.create(args.arch, num_features=args.features, norm=True, dropout=args.dropout,
                           num_classes=0, pooling_type=args.pooling_type)
-    # use CUDA
-    model.cuda()
-    model = nn.DataParallel(model)
+    model.to(device)
+    if device.type == "cuda" and torch.cuda.device_count() > 1:
+        model = nn.DataParallel(model)
     return model
 
 
@@ -127,10 +167,24 @@ def main_worker(args):
     iters = args.iters if (args.iters > 0) else None
     print("==> Load unlabeled dataset")
     dataset = get_data(args.dataset, args.data_dir)
+    #subsample_dataset(dataset, num_ids=10, max_per_split=200)
+    
     test_loader = get_test_loader(dataset, args.height, args.width, args.batch_size, args.workers)
 
     # Create model
     model = create_model(args)
+
+    # Load checkpoint if provided
+    resume_path = osp.join(args.logs_dir, 'checkpoint.pth.tar')
+    if osp.exists(resume_path):
+        print(f"==> Loading checkpoint from: {resume_path}")
+        checkpoint = load_checkpoint(resume_path)
+        model.load_state_dict(checkpoint['state_dict'])
+        start_epoch = checkpoint.get('epoch', 0)
+        best_mAP = checkpoint.get('best_mAP', 0)
+        print(f"==> Resumed at epoch {start_epoch}, best mAP so far: {best_mAP:.2%}")
+    else:
+        print("==> No checkpoint found. Training from scratch.")
 
     # Evaluator
     evaluator = Evaluator(model)
@@ -141,9 +195,10 @@ def main_worker(args):
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=0.1)
 
     # Trainer
-    trainer = ClusterContrastTrainer(model)
+    trainer = ClusterContrastTrainer(model, device=device)
 
-    for epoch in range(args.epochs):
+    for epoch in range(start_epoch, args.epochs):
+    #for epoch in range(args.epochs):
         with torch.no_grad():
             print('==> Create pseudo labels for unlabeled data')
             cluster_loader = get_test_loader(dataset, args.height, args.width,
@@ -185,10 +240,12 @@ def main_worker(args):
 
         del cluster_loader, features
 
+        feat_dim = model.module.num_features if hasattr(model, "module") else model.num_features
+
         # Create hybrid memory
-        memory = ClusterMemory(model.module.num_features, num_cluster, temp=args.temp,
-                               momentum=args.momentum, use_hard=args.use_hard).cuda()
-        memory.features = F.normalize(cluster_features, dim=1).cuda()
+        memory = ClusterMemory( feat_dim, num_cluster, temp=args.temp,
+                               momentum=args.momentum, use_hard=args.use_hard).to(device)
+        memory.features = F.normalize(cluster_features, dim=1).to(device)
 
         trainer.memory = memory
 

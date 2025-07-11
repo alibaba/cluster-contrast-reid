@@ -89,7 +89,7 @@ class ClusterMemory(nn.Module, ABC):
 
     def forward(self, inputs, targets):
 
-        inputs = F.normalize(inputs, dim=1).cuda()
+        inputs = F.normalize(inputs, dim=1).to(self.features.device)
         if self.use_hard:
             outputs = cm_hard(inputs, targets, self.features, self.momentum)
         else:
@@ -98,3 +98,4 @@ class ClusterMemory(nn.Module, ABC):
         outputs /= self.temp
         loss = F.cross_entropy(outputs, targets)
         return loss
+

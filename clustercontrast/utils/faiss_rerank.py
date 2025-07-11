@@ -11,14 +11,14 @@ import time
 import numpy as np
 from scipy.spatial.distance import cdist
 import gc
-import faiss
+#import faiss
 
 import torch
 import torch.nn.functional as F
 
-from .faiss_utils import search_index_pytorch, search_raw_array_pytorch, \
-                            index_init_gpu, index_init_cpu
+#from .faiss_utils import search_index_pytorch, search_raw_array_pytorch, index_init_gpu, index_init_cpu
 
+import hnswlib
 
 def k_reciprocal_neigh(initial_rank, i, k1):
     forward_k_neigh_index = initial_rank[i,:k1+1]
@@ -32,34 +32,27 @@ def compute_jaccard_distance(target_features, k1=20, k2=6, print_flag=True, sear
     if print_flag:
         print('Computing jaccard distance...')
 
-    ngpus = faiss.get_num_gpus()
     N = target_features.size(0)
     mat_type = np.float16 if use_float16 else np.float32
 
-    if (search_option==0):
-        # GPU + PyTorch CUDA Tensors (1)
-        res = faiss.StandardGpuResources()
-        res.setDefaultNullStreamAllDevices()
-        _, initial_rank = search_raw_array_pytorch(res, target_features, target_features, k1)
-        initial_rank = initial_rank.cpu().numpy()
-    elif (search_option==1):
-        # GPU + PyTorch CUDA Tensors (2)
-        res = faiss.StandardGpuResources()
-        index = faiss.GpuIndexFlatL2(res, target_features.size(-1))
-        index.add(target_features.cpu().numpy())
-        _, initial_rank = search_index_pytorch(index, target_features, k1)
-        res.syncDefaultStreamCurrentDevice()
-        initial_rank = initial_rank.cpu().numpy()
-    elif (search_option==2):
-        # GPU
-        index = index_init_gpu(ngpus, target_features.size(-1))
-        index.add(target_features.cpu().numpy())
-        _, initial_rank = index.search(target_features.cpu().numpy(), k1)
-    else:
-        # CPU
-        index = index_init_cpu(target_features.size(-1))
-        index.add(target_features.cpu().numpy())
-        _, initial_rank = index.search(target_features.cpu().numpy(), k1)
+    # ----------------------- hnswlib k-NN -----------------------
+    # Convert to NumPy (float32, L2-normalised for cosine space)
+    feats_np = target_features.cpu().numpy().astype(np.float32)
+
+    dim  = feats_np.shape[1]
+    num  = feats_np.shape[0]
+    k1p1 = k1 + 1                  # we’ll need self-match removed later
+
+    # Build / query index
+    index = hnswlib.Index(space='cosine', dim=dim)
+    index.init_index(max_elements=num, ef_construction=200, M=48)
+    index.add_items(feats_np, np.arange(num))
+    index.set_ef(max(200, k1p1 + 50))         # ef ≫ k1 for recall≈1
+
+    # labels shape: (num, k1+1); first column is the point itself
+    labels, _ = index.knn_query(feats_np, k=k1p1)
+    initial_rank = labels                      # (N, k1+1) int32
+    # -----------------------------------------------------------
 
 
     nn_k1 = []
