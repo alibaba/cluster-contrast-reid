@@ -174,6 +174,18 @@ def main_worker(args):
     # Create model
     model = create_model(args)
 
+    # Load checkpoint if provided
+    resume_path = osp.join(args.logs_dir, 'checkpoint.pth.tar')
+    if osp.exists(resume_path):
+        print(f"==> Loading checkpoint from: {resume_path}")
+        checkpoint = load_checkpoint(resume_path)
+        model.load_state_dict(checkpoint['state_dict'])
+        start_epoch = checkpoint.get('epoch', 0)
+        best_mAP = checkpoint.get('best_mAP', 0)
+        print(f"==> Resumed at epoch {start_epoch}, best mAP so far: {best_mAP:.2%}")
+    else:
+        print("==> No checkpoint found. Training from scratch.")
+
     # Evaluator
     evaluator = Evaluator(model)
 
@@ -185,7 +197,8 @@ def main_worker(args):
     # Trainer
     trainer = ClusterContrastTrainer(model, device=device)
 
-    for epoch in range(args.epochs):
+    for epoch in range(start_epoch, args.epochs):
+    #for epoch in range(args.epochs):
         with torch.no_grad():
             print('==> Create pseudo labels for unlabeled data')
             cluster_loader = get_test_loader(dataset, args.height, args.width,
